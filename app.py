@@ -1,0 +1,44 @@
+import os
+from flask import Flask, jsonify
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from dotenv import load_dotenv
+
+# 1. Încarcă variabilele din .env în memorie
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app)
+
+# 2. Extrage variabilele folosind os.getenv()
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+database = os.getenv('DB_NAME')
+
+
+
+# Configurarea conexiunii către PostgreSQL
+# Format: postgresql://utilizator:parola@localhost:port/nume_baza_de_date
+app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{host}:{port}/{database}'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# Definirea modelului pentru tabelul 'carti'
+class Carte(db.Model):
+    __tablename__ = 'carti'
+    id = db.Column(db.Integer, primary_key=True)
+    nume = db.Column(db.String(200), nullable=False)
+
+# Ruta pentru a citi toate cărțile
+@app.route('/carti', methods=['GET'])
+def get_carti():
+    toate_cartile = Carte.query.all()
+    # Transformăm obiectele din baza de date într-o listă de dicționare (JSON)
+    rezultat = [{"nume": carte.nume} for carte in toate_cartile]
+    return jsonify(rezultat)
+
+if __name__ == '__main__':
+    app.run(debug=True)
