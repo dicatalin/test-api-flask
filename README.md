@@ -7,3 +7,7 @@ pip install python-dotenv
 ```bash
 python app.py
 ```
+
+```bash
+docker build -t api-carti-image .
+```
