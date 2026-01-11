@@ -38,7 +38,7 @@
     // Funcția care apelează API-ul Flask
     async function incarcaCarti() {
         try {
-            const response = await fetch('http://127.0.0.1:5000/carti');
+            const response = await fetch('api/carti');
             const date = await response.json();
             
             const corpTabel = document.getElementById('tabel-carti');
