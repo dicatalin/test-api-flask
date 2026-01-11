@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from sqlalchemy import text
 
 # 1. Încarcă variabilele din .env în memorie
 load_dotenv()
@@ -26,6 +27,25 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{user}:{password}@{host}:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# --- Intreb de sanatate aplicatia ---
+
+@app.route('/healthz', methods=['GET'])
+def healthz():
+    """Liveness Probe: Verifică dacă procesul Flask rulează."""
+    return jsonify({"status": "alive"}), 200
+
+@app.route('/ready', methods=['GET'])
+def ready():
+    """Readiness Probe: Verifică dacă baza de date este accesibilă."""
+    try:
+        # Execută o interogare simplă pentru a vedea dacă DB răspunde
+        db.session.execute(text('SELECT 1'))
+        return jsonify({"status": "ready"}), 200
+    except Exception as e:
+        return jsonify({"status": "not ready", "error": str(e)}), 503
+
+# --- Intreb de sanatate aplicatia ---
 
 # Definirea modelului pentru tabelul 'carti'
 class Carte(db.Model):
